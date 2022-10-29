@@ -8,6 +8,7 @@ import re
 from datetime import datetime
 from pprint import pprint
 from urllib.request import urlretrieve
+import requests
 
 FAN_DENG_RESPONSE = '/Users/bobo/Desktop/fandeng/response/'
 FAN_DENG_DOWNLOAD = '/Users/bobo/Desktop/fandeng/download/'
@@ -48,8 +49,39 @@ def loop_files(dirPath):
         parse_file(file_path)
 
 
+def get_book_content(fragment_id):
+    url = 'https://gw1.dushu365.com/resource-orchestration-system/fragment/v101/content'
+    params = {
+        "appId": "2002",
+        "fragmentId": fragment_id,
+        "token": "20221029qdFLMhwx8rqDKTkOYpr"
+    }
+    r = requests.post(url=url, data=params).json()
+
+    return r['data']
+
+
+def get_book_list():
+    url = 'https://gw1.dushu365.com/resource-orchestration-system/books/bookInfoByCategory'
+    params = {
+        "categoryId": 0,
+        "order": 1,
+        "token": "20221029qdFLMhwx8rqDKTkOYpr",
+        "appId": "2002",
+        "bookReadStatus": -1,
+        "page": 1,
+        "pageSize": 1000
+    }
+    r = requests.post(url=url, data=params).json()
+    books = r['books']
+
+    for book in books:
+        book_content = get_book_content(book['contents'][0]['fragmentId'])
+        download_book(book_content)
+
+
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    loop_files(FAN_DENG_RESPONSE)
+    get_book_list()
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
